@@ -11,3 +11,10 @@ Connect with google agenda API : refer to [this tuto](https://developers.google.
 ```shell
 pip install --upgrade google-api-python-client
 ```
+
+# run
+
+```
+python agenda_reader.py
+```
+Sonos will tell you the next upcoming event

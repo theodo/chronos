@@ -1,7 +1,12 @@
 
+#!/usr/bin/python
+# coding=utf-8
+
 from __future__ import print_function
 import httplib2
 import os
+import requests
+import urllib
 
 from apiclient import discovery
 from oauth2client import client
@@ -74,30 +79,38 @@ def get_upcoming_event():
 
     # name
     eventDict['name'] = event['summary']
-    print ('Event name: {}'.format(event['summary']))
+    sonos_message = "Bonjour votre prochain rendez-vous est {}".format(eventDict['name'])
 
     # start
     start = event['start'].get('dateTime', event['start'].get('date'))
     eventDict['start'] = start
-    print ('Event start: {}'.format(start))
     
     # attendees
+    attendeesNames = list()
     if 'attendees' in event:
         attendees = event['attendees']
-        attendeesNames = list()
         for attendeeInfo in attendees:
             for key, attendee in attendeeInfo.items():
                 if key == 'displayName':
                     attendeesNames.append(attendee)
         eventDict['attendees'] = attendeesNames
-        print ('Event attendees: {}'.format(','.join(attendeesNames)))
+    if len(attendeesNames) > 0:
+        sonos_message = sonos_message + " avec {}".format(' '.join(attendeesNames))
 
     # location
     if 'location' in event:     
         eventDict['location'] = event['location']
-        print ('Event location: {}'.format(event['location']))
+        sonos_message = sonos_message + '. Vous devez vous rendre a {}'.format(eventDict['location'])
 
-    return eventDict
+    sonos_message = sonos_message + " a {}.".format(eventDict['start'])
+
+    print(sonos_message)
+
+    response = requests.get("http://192.168.12.173:8080/api/speak/fr/{}".format(sonos_message))
+
+    print(response.status_code)
+
+    return response.url
 
 if __name__ == '__main__':
-    event = get_upcoming_event()
+    print(get_upcoming_event())
